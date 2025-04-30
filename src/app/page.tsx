@@ -1,6 +1,7 @@
-
-"use client";
-
+"use client"
+import { Button } from "@/components/ui/button";
+import { useUser } from "@/context/userContext";
+import { UserRoundIcon } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { auth } from "../lib/firebase/firebaseConfig";
 import { signInWithPopup, GoogleAuthProvider } from "firebase/auth";
@@ -8,16 +9,14 @@ import { signInWithPopup, GoogleAuthProvider } from "firebase/auth";
 const provider = new GoogleAuthProvider();
 
 export default function Home() {
+
+  const {user, handleSignIn} = useUser();
+
   const router = useRouter();
 
-  const handleLogin = async () => {
-    try {
-      await signInWithPopup(auth, provider);
-      router.push("/dashboard");
-    } catch (error) {
-      console.error("Login failed:", error);
-    }
-  };
+  async function handleLogin() {
+    handleSignIn();
+  }
 
   return (
     <main
