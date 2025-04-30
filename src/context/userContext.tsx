@@ -1,9 +1,12 @@
+"use client"
 import { signInWithGoogle } from "@/lib/auth"
-import { getUser } from "@/lib/firebase/db"
+import { addUser, getUser } from "@/lib/firebase/db"
 import { auth } from "@/lib/firebase/firebaseConfig"
 import { User } from "@/types/user"
 import { onAuthStateChanged, signOut } from "firebase/auth"
 import { createContext, ReactNode, useContext, useEffect, useState } from "react"
+import type { User as FirebaseUser } from "firebase/auth"
+
 
 interface UserContextType {
     user: User | null
@@ -74,13 +77,30 @@ interface UserContextType {
     const handleSignIn = async () => {
       const userData = await signInWithGoogle()
       if (userData) {
-        const profile = await getUser(userData.uid)
+        const profile = await getUser(userData.uid);
   
         if (profile) {
           setUser(profile as User)
         } else {
-          console.error("Could not fetch user profile, logging out")
-          await handleSignOut()
+          console.error("Could not fetch user profile, attempting to add a new user");
+          const success = await addUser(userData as FirebaseUser);
+
+          if (!success) {
+
+            console.error("User add failed... aborting.");
+            await handleSignOut()
+
+          } else {
+
+            const isThereABetterWayToDoThis = await getUser(userData.userId || "xxx");
+            if (!isThereABetterWayToDoThis) {
+              console.error("User add failed... aborting.");
+              await handleSignOut()
+            } else {
+              setUser(isThereABetterWayToDoThis);
+            }
+
+          }
         }
   
         return true
@@ -115,3 +135,5 @@ interface UserContextType {
         </UserContext.Provider>
     )
   }
+
+export {UserContextProvider, useContext}
