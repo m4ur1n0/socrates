@@ -89,6 +89,7 @@ interface UserContextType {
 
             console.error("User add failed... aborting.");
             await handleSignOut()
+            return false;
 
           } else {
 
@@ -96,8 +97,11 @@ interface UserContextType {
             if (!isThereABetterWayToDoThis) {
               console.error("User add failed... aborting.");
               await handleSignOut()
+              return false;
             } else {
               setUser(isThereABetterWayToDoThis);
+              return true;
+
             }
 
           }

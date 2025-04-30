@@ -12,8 +12,8 @@ export default function Home() {
   const router = useRouter();
 
   async function handleLogin() {
-    await handleSignIn();
-    if (user) {
+    const suc = await handleSignIn();
+    if (suc) {
       router.push('/chat');
     } else {
       toast.error(
