@@ -1,4 +1,5 @@
 import { Toaster } from "@/components/ui/sonner";
+import { ChatContextProvider } from "@/context/chatContext";
 import { UserContextProvider } from "@/context/userContext";
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
@@ -30,7 +31,9 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
         <UserContextProvider>
-          {children}
+          <ChatContextProvider>
+            {children}
+          </ChatContextProvider>
         </UserContextProvider>
         <Toaster richColors />
       </body>

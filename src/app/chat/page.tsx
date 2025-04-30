@@ -1,3 +1,4 @@
+import ChatWindow from '@/components/ChatWindow'
 import NavBarRight from '@/components/NavBarRight'
 import React from 'react'
 
@@ -10,7 +11,7 @@ const page = () => {
       </div>
 
       <div className='main-chat-window w-full h-full'>
-
+        <ChatWindow />
       </div>
 
       <NavBarRight />
