@@ -1,6 +1,5 @@
 // Import the functions you need from the SDKs you need
 import { initializeApp } from "firebase/app";
-import { getAnalytics } from "firebase/analytics";
 import { getAuth } from 'firebase/auth';   // ← make sure this line is here
 
 // TODO: Add SDKs for Firebase products that you want to use
@@ -9,12 +8,12 @@ import { getAuth } from 'firebase/auth';   // ← make sure this line is here
 // Your web app's Firebase configuration
 // For Firebase JS SDK v7.20.0 and later, measurementId is optional
 const firebaseConfig = {
-    apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY!,
+    apiKey: process.env.NEXT_PUBLIC_FIRESTORE_KEY,
     authDomain: "socrates-backend-7eabc.firebaseapp.com",
     projectId: "socrates-backend-7eabc",
     storageBucket: "socrates-backend-7eabc.firebasestorage.app",
     messagingSenderId: "610358048373",
-    appId: "1:610358048373:web:b8134aa01351f6bf6cea3c",
+    appId: process.env.NEXT_PUBLIC_FIRESTORE_APP_ID,
     measurementId: "G-3XPEFM1KTQ"
 };
 
