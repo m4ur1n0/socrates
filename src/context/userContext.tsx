@@ -1,8 +1,13 @@
+import { signInWithGoogle } from "@/lib/auth"
+import { getUser } from "@/lib/firebase/db"
+import { auth } from "@/lib/firebase/firebaseConfig"
 import { User } from "@/types/user"
-import { createContext, ReactNode, useContext, useState } from "react"
+import { onAuthStateChanged, signOut } from "firebase/auth"
+import { createContext, ReactNode, useContext, useEffect, useState } from "react"
 
 interface UserContextType {
     user: User | null
+    loading : boolean
     handleSignIn: () => Promise<boolean>
     handleSignOut: () => Promise<void>
     refreshUser: () => Promise<void>
@@ -10,6 +15,7 @@ interface UserContextType {
   
   const UserContext = createContext<UserContextType>({
     user: null,
+    loading : false,
     handleSignIn: async () => false,
     handleSignOut: async () => {},
     refreshUser: async () => {},
@@ -22,11 +28,83 @@ interface UserContextType {
 
   const UserContextProvider = ({ children }: { children: ReactNode }) => {
     const [user, setUser] = useState<User | null>(null);
+    const [loading, setLoading] = useState<boolean>(false)
+
+
+
+    useEffect(() => {
+      const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
+        setLoading(true)
+        if (firebaseUser) {
+          try {
+            const profile = await getUser(firebaseUser.uid)
+            if (profile) {
+              setUser(profile as User)
+            } else {
+              console.error("Could not fetch user profile, logging out")
+              await handleSignOut()
+            }
+          } catch (error) {
+            console.error("Error fetching user profile:", error)
+            await handleSignOut()
+          }
+        } else {
+          setUser(null)
+        }
+        setLoading(false)
+      })
+  
+      return unsubscribe
+    }, [])
+
+    async function refreshUser() {
+      try {
+        if (!user) {
+          throw new Error("Cannot refresh without user already logged in.")
+        } else {
+          const u = await getUser(user.userId)
+          setUser(u as User)
+        }
+      } catch (err) {
+        console.error("Error fetching user profile:", err)
+        await handleSignOut()
+      }
+    }
+
+    const handleSignIn = async () => {
+      const userData = await signInWithGoogle()
+      if (userData) {
+        const profile = await getUser(userData.uid)
+  
+        if (profile) {
+          setUser(profile as User)
+        } else {
+          console.error("Could not fetch user profile, logging out")
+          await handleSignOut()
+        }
+  
+        return true
+      }
+      return false
+    }
+  
+    const handleSignOut = async () => {
+      try {
+        await signOut(auth)
+        setUser(null)
+      } catch (error) {
+        console.error("Error during sign-out:", error)
+      }
+    }
 
     
 
     const value = {
-        user
+        user,
+        loading,
+        handleSignIn,
+        handleSignOut,
+        refreshUser,
     }
 
     return (
