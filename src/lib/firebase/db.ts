@@ -1,5 +1,7 @@
 import type { User as FirebaseUser } from "firebase/auth"
 import { User } from "@/types/user"
+import { set, ref, get, update } from "firebase/database"
+import { database } from "./firebaseConfig"
 
 // User Functions
 export const addUser = async (user: FirebaseUser) => {

@@ -1,5 +1,5 @@
-import { addUser, getUser } from "./db"
-import { auth } from "@/lib/firebase"
+import { addUser, getUser } from "./firebase/db"
+import { auth } from "@/lib/firebase/firebaseConfig"
 import { GoogleAuthProvider, signInWithPopup } from "firebase/auth"
 
 const provider = new GoogleAuthProvider()

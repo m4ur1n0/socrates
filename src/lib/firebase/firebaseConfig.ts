@@ -13,7 +13,7 @@ const firebaseConfig = {
     projectId: "socrates-backend-7eabc",
     storageBucket: "socrates-backend-7eabc.firebasestorage.app",
     messagingSenderId: "610358048373",
-    appId: "1:610358048373:web:b8134aa01351f6bf6cea3c",
+    appId: process.env.NEXT_FIRESTORE_APP_ID,
     measurementId: "G-3XPEFM1KTQ"
 };
 
