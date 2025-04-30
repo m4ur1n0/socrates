@@ -1,12 +1,9 @@
 "use client"
-import { Button } from "@/components/ui/button";
+// import { Button } from "@/components/ui/button";
 import { useUser } from "@/context/userContext";
-import { UserRoundIcon } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { auth } from "../lib/firebase/firebaseConfig";
-import { signInWithPopup, GoogleAuthProvider } from "firebase/auth";
+import {toast} from "sonner";
 
-const provider = new GoogleAuthProvider();
 
 export default function Home() {
 
@@ -15,7 +12,17 @@ export default function Home() {
   const router = useRouter();
 
   async function handleLogin() {
-    handleSignIn();
+    await handleSignIn();
+    if (user) {
+      router.push('/chat');
+    } else {
+      toast.error(
+        "Sorry, there was an issue logging you in.",
+        // {
+        //   description : "Please try again in a moment.",
+        // }
+      )
+    }
   }
 
   return (
@@ -58,12 +65,13 @@ export default function Home() {
           onClick={handleLogin}
           className="
             mt-8 inline-flex items-center
-            px-8 py-3
+            px-8 py-3 
             bg-[#b0cde0] text-[#00326c]
             font-semibold rounded-full
             shadow-lg hover:opacity-90
             focus:outline-none focus:ring-4 focus:ring-[#b0cde0]/50
             transition
+            cursor-pointer
           "
         >
           Get Started
@@ -74,7 +82,7 @@ export default function Home() {
       <section className="hidden md:flex flex-1 items-center justify-center p-8 bg-transparent">
         <div className="rounded-2xl overflow-hidden shadow-2xl">
           <img
-            src="/landing.png"
+            src="/images/landing.png"
             alt="Abstract Socrates illustration"
             className="w-auto h-[80vh] object-contain block bg-transparent"
           />
