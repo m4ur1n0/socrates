@@ -26,4 +26,4 @@ export const database = getDatabase(app)
 // Initialize Authentication
 export const auth = getAuth(app)
 
-export const firestore = getFirestore(app);
+export const firestoreDb = getFirestore(app);

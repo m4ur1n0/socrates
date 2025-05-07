@@ -1,7 +1,9 @@
 import type { User as FirebaseUser } from "firebase/auth"
 import { User } from "@/types/user"
 import { set, ref, get, update } from "firebase/database"
-import { database } from "./firebaseConfig"
+import { database, firestoreDb } from "./firebaseConfig"
+import { Conversation } from "@/types/Conversation"
+import { collection, doc, getDoc, setDoc } from "firebase/firestore"
 
 // User Functions
 export const addUser = async (user: FirebaseUser) => {
@@ -69,3 +71,56 @@ export const addUser = async (user: FirebaseUser) => {
       return []
     }
   }
+
+
+// document functions
+
+/**
+
+interface ChunkDocument {
+    chunk : string;
+    embedding : number[];
+    index : number;
+}
+
+interface Conversation {
+    conversationId : string;
+    userId : string;
+    embeddingMap : ChunkDocument[]
+}
+
+ */
+
+export async function getConversation(conversationId : string) {
+  try {
+
+    // gets full conversation -- looks like the above
+    const docRef = doc(firestoreDb, 'conversations', conversationId);
+    const snap = await getDoc(docRef);
+    if (!snap.exists()) throw new Error("snapshot doesn't exist in db"); 
+
+    return snap.data() as Conversation;
+    
+  } catch (err) {
+    console.error(`An error occurred while trying to load the conversation : ${err}`);
+    return null
+  }
+}
+
+export async function saveConversation(
+  convo : Conversation
+) {
+
+  if (!convo.lastAccessedDate) {
+    convo.lastAccessedDate = new Date();
+  }
+
+  const docRef = doc(firestoreDb, 'conversations', convo.conversationId);
+  await setDoc(docRef, convo);
+
+  // error on error?
+
+  return true;
+
+}
+

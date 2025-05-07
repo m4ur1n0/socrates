@@ -1,20 +1,40 @@
 "use client"
+import { chunkText } from '@/lib/files/ChunkText'
+import { generateEmbeddings } from '@/lib/files/EmbedChunks'
+import { extractText } from '@/lib/files/TextExtraction'
+import { saveConversation } from '@/lib/firebase/db'
 import { useChat } from '@/context/chatContext';
 import { genericGeminiQuery } from '@/lib/gemini/gemini';
 import React, { useEffect, useRef, useState } from 'react'
 import ChatBubble from './ChatBubble';
+import TextbookUploader from './TextbookUploader';
 import { Button } from './ui/button';
 import { Textarea } from './ui/textarea';
+import { useUser } from '@/context/userContext'
+import { Conversation } from '@/types/Conversation'
+import {v4 as uuidv4 } from 'uuid'
 
 const ChatWindow = () => {
 
     const inputRef = useRef<HTMLTextAreaElement>(null);
+    const fileRef = useRef<File | null>(null);
+
     const endOfMessagesRef = useRef<HTMLDivElement>(null);
     const textAreaMaxHeight = 300;
 
 
     const [inputContent, setInputContent] = useState("");
     const [generationState, setGenerationState] = useState(false);
+    // fileState shows where we are in terms of having a file
+    // 0 == no file uploaded
+    // 1 == file uploaded, parsing/chunking/embedding in process
+    // 2 == file uploaded and stored properly
+    // 3 == failure
+    const [fileState, setFileState] = useState(0);
+    const [conversationId, setConversationId] = useState<string>("");
+
+    // WIZARD OF OZ RN
+    setConversationId(uuidv4() as string);
 
     const {
         chatHistory,
@@ -25,6 +45,8 @@ const ChatWindow = () => {
         setTextbookContext,
 
     } = useChat();
+
+    const {user} = useUser();
 
     const adjustTextAreaHeight = () => {
         if (inputRef.current) {
@@ -113,8 +135,59 @@ const ChatWindow = () => {
         }
     }, [chatHistory]);
 
+    async function saveAndStoreConversationFirstTime() {
+        // the signaler would have checked, but never hurts to double
+        if (fileRef.current === null) return; // fail ? error ?
+
+        // extract text
+        const txt = await extractText(fileRef.current);
+
+        // chunk text
+        const chunks = chunkText(txt, 300, 50);
+
+        // embed chunks
+        const embeddings = await generateEmbeddings(chunks);
+
+        const conv : Conversation = {
+            conversationId,
+            userId : user?.userId as string,
+            embeddingMap : chunks.map((chunk, idx) => {
+                return {
+                    chunk,
+                    embedding : embeddings[idx],
+                    index : idx
+                }
+            }),
+            chatHistory,
+            lastAccessedDate : new Date()
+        };
+
+        // STORE EMBEDDINGS IN LOCAL STORAGE
+        // STORE CHUNKS IN LOCAL STORAGE
+
+        const res = await saveConversation(conv);
+
+        setFileState(res ? 2 : 3); // succ or fail
+
+        if (res) console.log("everything went well...?");
+
+
+    }
+
+    useEffect(() => {
+        // whenever fileState flips from anything to 1 (set by file uploader, we want to parse and save)
+
+        if (fileState === 1) {
+            saveAndStoreConversationFirstTime();
+        }
+
+    }, [fileState])
+
   return (
     <div className='w-full h-full flex flex-col justify-center p-10 pt-0 relative'>
+
+        {/* FILE UPLOAD BUTTON */}
+        <TextbookUploader fileRef={fileRef} setFileState={setFileState} />
         
         {/* CHAT BUBBLES (WILL CHANGE STYLE) */}
         <div className="messages-window flex flex-col w-full h-auto max-h-[80%] items-start gap-2 overflow-hidden overflow-y-scroll">
@@ -167,3 +240,4 @@ const ChatWindow = () => {
 }
 
 export default ChatWindow
+
