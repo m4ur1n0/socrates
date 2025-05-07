@@ -84,6 +84,8 @@ const ChatWindow = () => {
 
         // eventually we'll have gemini return a json-structured response, for now we go with a string
         const prompt = inputContent;
+        setInputContent("");
+
 
         try {
             const resp = await genericGeminiQuery(prompt, chatHistory);
@@ -92,7 +94,6 @@ const ChatWindow = () => {
                 throw new Error("Error occurred in gemini api call...");
             }
 
-            setInputContent("");
 
             // do something to parse the actual response we get, rn just pretending
 
@@ -113,6 +114,7 @@ const ChatWindow = () => {
 
         } catch (err) {
             console.error(`Error occurred on input submit : ${err}`);
+            setInputContent(prompt);
         }
 
     }
