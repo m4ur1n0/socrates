@@ -35,30 +35,30 @@ interface UserContextType {
 
 
 
-    useEffect(() => {
-      const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
-        setLoading(true)
-        if (firebaseUser) {
-          try {
-            const profile = await getUser(firebaseUser.uid)
-            if (profile) {
-              setUser(profile as User)
-            } else {
-              console.error("Could not fetch user profile, logging out")
-              await handleSignOut()
-            }
-          } catch (error) {
-            console.error("Error fetching user profile:", error)
-            await handleSignOut()
-          }
-        } else {
-          setUser(null)
-        }
-        setLoading(false)
-      })
+    // useEffect(() => {
+    //   const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
+    //     setLoading(true)
+    //     if (firebaseUser) {
+    //       try {
+    //         const profile = await getUser(firebaseUser.uid)
+    //         if (profile) {
+    //           setUser(profile as User)
+    //         } else {
+    //           console.error("Could not fetch user profile, logging out")
+    //           await handleSignOut()
+    //         }
+    //       } catch (error) {
+    //         console.error("Error fetching user profile:", error)
+    //         await handleSignOut()
+    //       }
+    //     } else {
+    //       setUser(null)
+    //     }
+    //     setLoading(false)
+    //   })
   
-      return unsubscribe
-    }, [])
+    //   return unsubscribe
+    // }, [])
 
     async function refreshUser() {
       try {

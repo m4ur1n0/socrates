@@ -1,7 +1,7 @@
 "use client"
 import { chunkText } from '@/lib/files/ChunkText'
 import { generateEmbeddings } from '@/lib/files/EmbedChunks'
-import { extractText } from '@/lib/files/TextExtraction'
+// import { extractText } from '@/lib/files/TextExtraction'
 import { saveConversation } from '@/lib/firebase/db'
 import { useChat } from '@/context/chatContext';
 import { genericGeminiQuery } from '@/lib/gemini/gemini';
@@ -14,10 +14,11 @@ import { useUser } from '@/context/userContext'
 import { Conversation } from '@/types/Conversation'
 import {v4 as uuidv4 } from 'uuid'
 
-
 const example_text = ``
 
 const ChatWindow = () => {
+
+
 
     const inputRef = useRef<HTMLTextAreaElement>(null);
     const fileRef = useRef<File | null>(null);
@@ -34,10 +35,10 @@ const ChatWindow = () => {
     // 2 == file uploaded and stored properly
     // 3 == failure
     const [fileState, setFileState] = useState(0);
-    const [conversationId, setConversationId] = useState<string>("");
-
     // WIZARD OF OZ RN
-    setConversationId(uuidv4() as string);
+    const [conversationId, setConversationId] = useState<string>(uuidv4()); 
+
+    // setConversationId(uuidv4() as string);
 
     const {
         chatHistory,
@@ -143,7 +144,8 @@ const ChatWindow = () => {
         if (fileRef.current === null) return; // fail ? error ?
 
         // extract text
-        const txt = await extractText(fileRef.current);
+        // const txt = await extractText(fileRef.current);
+        const txt = "";
 
         // chunk text
         const chunks = chunkText(txt, 300, 50);
@@ -177,14 +179,14 @@ const ChatWindow = () => {
 
     }
 
-    useEffect(() => {
-        // whenever fileState flips from anything to 1 (set by file uploader, we want to parse and save)
+    // useEffect(() => {
+    //     // whenever fileState flips from anything to 1 (set by file uploader, we want to parse and save)
 
-        if (fileState === 1) {
-            saveAndStoreConversationFirstTime();
-        }
+    //     if (fileState === 1) {
+    //         saveAndStoreConversationFirstTime();
+    //     }
 
-    }, [fileState])
+    // }, [fileState])
 
   return (
     <div className='w-full h-full flex flex-col justify-center p-10 pt-0 relative'>

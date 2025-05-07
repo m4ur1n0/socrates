@@ -1,3 +1,5 @@
+"use client"
+
 import * as pdfjs from 'pdfjs-dist'
 import mammoth from 'mammoth'
 
