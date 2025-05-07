@@ -14,6 +14,9 @@ import { useUser } from '@/context/userContext'
 import { Conversation } from '@/types/Conversation'
 import {v4 as uuidv4 } from 'uuid'
 
+
+const example_text = ``
+
 const ChatWindow = () => {
 
     const inputRef = useRef<HTMLTextAreaElement>(null);
