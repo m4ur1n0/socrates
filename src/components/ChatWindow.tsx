@@ -79,7 +79,7 @@ const ChatWindow = () => {
 
         // eventually we'll have gemini return a json-structured response, for now we go with a string
         const prompt = inputContent;
-        let promptChunks = [];
+        let promptChunks : string[] = [];
 
         const obj = loadCachedEmbeddings();
         if (obj) {
@@ -89,6 +89,7 @@ const ChatWindow = () => {
 
             const inputChunks = await getChunksFromInput(prompt, chunks, embeddings);
             console.log(`\n\nLOADED CHUNKS : \n ${inputChunks} \n\n`);
+            promptChunks = inputChunks as string[];
 
         } else {
             console.log("WE DID NOT LOAD ANY CHNKS");
@@ -97,7 +98,7 @@ const ChatWindow = () => {
 
 
         try {
-            const resp = await genericGeminiQuery(prompt, chatHistory);
+            const resp = await genericGeminiQuery(prompt, chatHistory, promptChunks);
 
             if (!resp) {
                 throw new Error("Error occurred in gemini api call...");
@@ -205,21 +206,21 @@ const ChatWindow = () => {
     }, [fileState])
 
   return (
-    <div className='w-full h-full flex flex-col justify-center p-10 pt-0 relative'>
+    <div className='w-full h-full flex flex-col justify-start items-center p-10 pt-[5%] relative'>
 
         {/* FILE UPLOAD BUTTON */}
         <TextbookUploader fileRef={fileRef} setFileState={setFileState} />
         
         {/* CHAT BUBBLES (WILL CHANGE STYLE) */}
-        <div className="messages-window flex flex-col w-full h-auto max-h-[80%] items-start gap-2 overflow-hidden overflow-y-scroll">
-            {
+        <div className="messages-window flex flex-col w-[90%] h-[85%] max-h-[85%] items-start gap-2 overflow-hidden overflow-y-scroll no-scrollbar">
+            { 
                 chatHistory.length > 0 ? 
                 (
                     chatHistory.map((chatMsg, idx) => (
                         <ChatBubble message={chatMsg} key={idx} />
                     ))
                 ) : (
-                    <p className='w-full text-center mt-5 text-gray-800'>
+                    <p className='w-full text-center mt-5 text-gray-500 '>
                         Start learning, or ask Socrates a question.
                     </p>
                 )
