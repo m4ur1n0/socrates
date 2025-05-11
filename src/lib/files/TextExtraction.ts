@@ -1,5 +1,8 @@
-import * as pdfjs from 'pdfjs-dist'
+// "use client"
+// import * as pdfjs from 'pdfjs-dist'
 import mammoth from 'mammoth'
+
+// pdfjs.GlobalWorkerOptions.workerSrc = ``;
 
 export async function extractText(file : File): Promise<string> {
 
@@ -7,9 +10,10 @@ export async function extractText(file : File): Promise<string> {
 
     if (fileType === "pdf") {
         // deal w pdf first
+        // const pdfjsLib = await import('https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.10.377/pdf.min.js');
 
         const arrayBuffer = await file.arrayBuffer();
-        const pdf = await pdfjs.getDocument({ data : arrayBuffer}).promise;
+        const pdf = await pdfjsLib.getDocument({ data : arrayBuffer}).promise;
 
         let text = '';
 

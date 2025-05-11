@@ -1,6 +1,6 @@
 "use client"
 import { chunkText } from '@/lib/files/ChunkText'
-import { generateEmbeddings } from '@/lib/files/EmbedChunks'
+import { generateEmbeddings, getChunksFromInput, loadCachedEmbeddings } from '@/lib/files/EmbedChunks'
 import { extractText } from '@/lib/files/TextExtraction'
 import { saveConversation } from '@/lib/firebase/db'
 import { useChat } from '@/context/chatContext';
@@ -31,10 +31,7 @@ const ChatWindow = () => {
     // 2 == file uploaded and stored properly
     // 3 == failure
     const [fileState, setFileState] = useState(0);
-    const [conversationId, setConversationId] = useState<string>("");
-
-    // WIZARD OF OZ RN
-    setConversationId(uuidv4() as string);
+    const [conversationId, setConversationId] = useState<string>(uuidv4() as string);
 
     const {
         chatHistory,
@@ -66,6 +63,8 @@ const ChatWindow = () => {
         if (!inputContent) return;
         setGenerationState(true);
 
+
+
         setChatHistory((prev : any[]) => [
             ...prev,
             {
@@ -80,6 +79,22 @@ const ChatWindow = () => {
 
         // eventually we'll have gemini return a json-structured response, for now we go with a string
         const prompt = inputContent;
+        let promptChunks = [];
+
+        const obj = loadCachedEmbeddings();
+        if (obj) {
+            const {chunks, embeddings} = obj;
+
+            console.log(`HERE ARE THE EMBEDDINGS IM SENDING : \n${JSON.stringify(embeddings)}\n`);
+
+            const inputChunks = await getChunksFromInput(prompt, chunks, embeddings);
+            console.log(`\n\nLOADED CHUNKS : \n ${inputChunks} \n\n`);
+
+        } else {
+            console.log("WE DID NOT LOAD ANY CHNKS");
+        }
+
+
 
         try {
             const resp = await genericGeminiQuery(prompt, chatHistory);
@@ -141,12 +156,17 @@ const ChatWindow = () => {
 
         // extract text
         const txt = await extractText(fileRef.current);
+        console.log(`TEXT : ${txt}\n\n`);
 
         // chunk text
         const chunks = chunkText(txt, 300, 50);
+        console.log(`CHUNKS : ${chunks}\n\n`);
+
 
         // embed chunks
         const embeddings = await generateEmbeddings(chunks);
+        console.log(`EMBEDDINGS : ${embeddings}\n\n`);
+
 
         const conv : Conversation = {
             conversationId,
@@ -165,7 +185,8 @@ const ChatWindow = () => {
         // STORE EMBEDDINGS IN LOCAL STORAGE
         // STORE CHUNKS IN LOCAL STORAGE
 
-        const res = await saveConversation(conv);
+        // const res = await saveConversation(conv);
+        const res = true;
 
         setFileState(res ? 2 : 3); // succ or fail
 
