@@ -88,7 +88,6 @@ const ChatWindow = () => {
             console.log(`HERE ARE THE EMBEDDINGS IM SENDING : \n${JSON.stringify(embeddings)}\n`);
 
             const inputChunks = await getChunksFromInput(prompt, chunks, embeddings);
-            console.log(`\n\nLOADED CHUNKS : \n ${inputChunks} \n\n`);
             promptChunks = inputChunks as string[];
 
         } else {
@@ -99,6 +98,7 @@ const ChatWindow = () => {
 
         try {
             const resp = await genericGeminiQuery(prompt, chatHistory, promptChunks);
+
 
             if (!resp) {
                 throw new Error("Error occurred in gemini api call...");
