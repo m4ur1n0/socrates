@@ -20,4 +20,3 @@ export function chunkText(text : string, chunkSize? : number, overlap? : number)
 
     return chunks;
 }
-

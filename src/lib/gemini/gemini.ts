@@ -1,4 +1,5 @@
 import { GenerateContentResult } from "@google/generative-ai";
+import { create } from "domain";
 import { Gemini_2_0 } from "./geminiConfig";
 
 const handleErr = (err : string) => {
@@ -45,7 +46,7 @@ export const genericGeminiQuery = async (prompt : string, chatHistory? : any[], 
     try {
         if (!context) context=[]; // itll already be passed as [] anyway but whatever
         const history = chatHistory ? chatHistory : [];
-        console.log(`\n\RECEIVED QUERY WITH CHUNKS : \n ${context} \n\n`);
+        // console.log(`\n\RECEIVED QUERY WITH CHUNKS : \n ${context} \n\n`);
         const realPrompt = generatePrompt(prompt, history, context);
         const resp: GenerateContentResult = await Gemini_2_0.generateContent(
           realPrompt
@@ -62,4 +63,80 @@ export const genericGeminiQuery = async (prompt : string, chatHistory? : any[], 
     } catch (err) {
         return handleErr(err as string);
     }
+}
+
+
+
+export const createStudyPlanQuery = async (textbookText : string) : Promise<string | string[]> => {
+
+  // take in the textbook text, create a step-by-step list of topics to cover
+  try {
+
+
+    const prompt = `
+      You are working as a tutor. You are going to be passed the content of part of a textbook, or a problem set. Your student is trying to master the topics
+      covered in this section of text. Your job right now is to produce a list of topics to cover. You are designed to break things down into bite-sized topics
+      to help your student grasp a subject in a step-by-step way, and your list of topics must reflect this goal.
+
+      The format of your response must be as a JSON-loadable list. I must be able to call JSON.parse(your_response) without editing your response in any way, meaning
+      your response must not contain any extraneous characters besides your list whatsoever. Limit yourself to 10 topics maximum, less than 10 is fine.
+
+      Here is an example: If your student passed you a problem set about calculating sample probabilities, you might return the following:
+      '["Definition of a sample space",
+        "Difference between population and sample",
+        "Basic probability rules (addition and multiplication)",
+        "Independent vs. dependent events",
+        "Simple events vs. compound events",
+        "How to calculate the probability of a single event",
+        "How to calculate the probability of multiple events (joint probability)",
+        "Complement rule and how to apply it",
+        "Using combinations and permutations in probability",
+        "Understanding and calculating conditional probability",
+        "Understanding sampling methods (with vs. without replacement)",
+        "Law of Total Probability",
+        "Common mistakes in calculating sample probabilities"]'
+      
+      Remember, your response must be a string, starting with [, ending with ], and IMMEDIATELY PASSABLE TO JSON.parse(). Your response must contain absolutely nothing else, or it will
+      be unusable by our interface.
+
+      Everything past this sentence will be the content uploaded by your student that they are hoping to study.
+
+      ${textbookText}
+    `
+    const resp: GenerateContentResult = await Gemini_2_0.generateContent(
+      prompt
+    );
+
+    if (!resp) {
+      throw new Error("The call to gemini for the topics list failed.");
+    }
+
+    let respText = resp.response.text();
+    let topics;
+
+
+    try {
+      respText = respText.replace('```', '');
+      respText = respText.trim();
+
+      topics = JSON.parse(respText);
+      
+      console.log(`TOPICS : \n${topics}`);
+      return topics;
+
+    } catch (err) {
+      // if it wasn't JSON loadable
+      console.log("ERROR -- GEMINI RETURNED A NON-JSON-LOADABLE STRING OF TOPICS.");
+      console.log(respText);
+      
+      // gonna get risky here....
+      // just try again
+      return await createStudyPlanQuery(textbookText);
+    }
+
+  } catch (err) {
+    return handleErr(err as string);
+  }
+
+
 }

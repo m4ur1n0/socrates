@@ -4,7 +4,7 @@ import { generateEmbeddings, getChunksFromInput, loadCachedEmbeddings } from '@/
 import { extractText } from '@/lib/files/TextExtraction'
 import { saveConversation } from '@/lib/firebase/db'
 import { useChat } from '@/context/chatContext';
-import { genericGeminiQuery } from '@/lib/gemini/gemini';
+import { createStudyPlanQuery, genericGeminiQuery } from '@/lib/gemini/gemini';
 import React, { useEffect, useRef, useState } from 'react'
 import ChatBubble from './ChatBubble';
 import TextbookUploader from './TextbookUploader';
@@ -163,10 +163,18 @@ const ChatWindow = () => {
         const chunks = chunkText(txt, 300, 50);
         console.log(`CHUNKS : ${chunks}\n\n`);
 
+        // generate list of topics
+        const topicsP = createStudyPlanQuery(txt);
+
 
         // embed chunks
-        const embeddings = await generateEmbeddings(chunks);
+        const embeddingsP = generateEmbeddings(chunks);
+
+        const [topics, embeddings] = await Promise.all([topicsP, embeddingsP]);
+
         console.log(`EMBEDDINGS : ${embeddings}\n\n`);
+
+        console.log(`TOPICS PLAN : ${topics}\n\n`);
 
 
         const conv : Conversation = {
@@ -209,7 +217,7 @@ const ChatWindow = () => {
     <div className='w-full h-full flex flex-col justify-start items-center p-10 pt-[5%] relative'>
 
         {/* FILE UPLOAD BUTTON */}
-        <TextbookUploader fileRef={fileRef} setFileState={setFileState} />
+        <TextbookUploader fileRef={fileRef} setFileState={setFileState} fileState={fileState} />
         
         {/* CHAT BUBBLES (WILL CHANGE STYLE) */}
         <div className="messages-window flex flex-col w-[90%] h-[85%] max-h-[85%] items-start gap-2 overflow-hidden overflow-y-scroll no-scrollbar">

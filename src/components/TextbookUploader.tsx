@@ -3,15 +3,17 @@ import React from 'react'
 import { Button } from './ui/button'
 import { Dialog, DialogClose, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from './ui/dialog'
 import { Input } from './ui/input'
+import { Spinner } from 'react-bootstrap'
 
 
 type Props = {
     fileRef : React.RefObject<File | null>
     setFileState : React.Dispatch<React.SetStateAction<number>>
+    fileState : number
 }
 
 
-const TextbookUploader = ({fileRef, setFileState}: Props) => {
+const TextbookUploader = ({fileRef, setFileState, fileState}: Props) => {
 
     /* We're gonna want it to be a file icon if none has been uploaded, else, a checkmark */
 
@@ -40,8 +42,29 @@ const TextbookUploader = ({fileRef, setFileState}: Props) => {
   return (
     <Dialog>
         <DialogTrigger asChild>
-            <Button variant="outline" className="rounded-full w-[50px] h-[50px] p-0 cursor-pointer absolute top-5 left-5">
-                <img className='upload-vector-icon object-fit' src="/vectors/upload_vector.svg" />
+            <Button variant="outline" className="rounded-full w-[50px] h-[50px] p-0 cursor-pointer absolute top-5 left-5" disabled={fileState === 1 || fileState === 2}
+            style={{
+                backgroundColor : ((fileState === 0 || fileState === 1) ? "white" : (fileState === 2) ? "rgb(134 239 172)" : "rgb(252, 165, 165)")
+            }}>
+                {
+                    fileState === 0 ?
+                    <img className='upload-vector-icon object-fit' src="/vectors/upload_vector.svg" />
+                    :
+                    (
+                        fileState === 1 ?
+                        // <Spinner animation="border" role="status" variant="secondary" />
+                        <div className='w-[30%] h-[30%] bg-gray-800 animate-ping rounded-full' />
+                        :
+                        (
+                            fileState === 2 ?
+                            <img className='success-vector-icon object-fit ' src="/vectors/checkmark.svg" />
+                            :
+                            <img className='upload-vector-icon object-fit ' src="/vectors/failure.svg" />
+
+                        )
+                    )
+
+                }
             </Button>
         </DialogTrigger>
         <DialogContent className=''>

@@ -33,16 +33,25 @@ interface ChatContextType {
     const [chatHistory, setChatHistory] = useState<any[]>([]);
     const [questionsHistory, setQuestionsHistory] = useState<any[]>([]);
     const [textbookContext, setTextbookContext] = useState<any[]>([]);
+    const [topicsList, setTopicsList] = useState<string[]>([]);
+    const [conceptsHistory, setConceptsHistory] = useState<any[]>([]);
+    const [currentConcept, setCurrentConcept] = useState<any>(null);
 
    
     const value = {
         chatHistory,
         questionsHistory,
         textbookContext,
+        topicsList,
+        conceptsHistory,
+        currentConcept,
         
         setChatHistory,
         setQuestionsHistory,
         setTextbookContext,
+        setTopicsList,
+        setConceptsHistory,
+        setCurrentConcept,
     }
 
     return (
