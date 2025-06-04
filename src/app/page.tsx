@@ -12,6 +12,11 @@ export default function Home() {
   const router = useRouter();
 
   async function handleLogin() {
+    if (user) {
+      // if already signed in
+      router.push('/chat');
+      return;
+    }
     const suc = await handleSignIn();
     if (suc) {
       router.push('/chat');

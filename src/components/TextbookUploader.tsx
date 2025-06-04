@@ -79,10 +79,12 @@ const TextbookUploader = ({fileRef, setFileState, fileState}: Props) => {
             <div className='textbook-upload-dialog-content w-full h-full p-5'>
 
                 {/* <Label className='p-1' htmlFor='textbook'>Materials File: </Label> */}
+                {/* ONLY ACCEPTING PDFS FOR RIGHT NOW */}
                 <Input 
                     id="textbook" 
                     type="file" 
-                    accept='.pdf,.doc,.docx,.txt'
+                    // accept='.pdf,.doc,.docx,.txt'
+                    accept=".pdf"
                     onChange={handleFileChange}
                 />
 

@@ -131,7 +131,8 @@ export const createStudyPlanQuery = async (textbookText : string) : Promise<stri
       
       // gonna get risky here....
       // just try again
-      return await createStudyPlanQuery(textbookText);
+      // return await createStudyPlanQuery(textbookText);
+      return [""];
     }
 
   } catch (err) {

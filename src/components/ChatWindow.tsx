@@ -13,6 +13,8 @@ import { Textarea } from './ui/textarea';
 import { useUser } from '@/context/userContext'
 import { Conversation } from '@/types/Conversation'
 import {v4 as uuidv4 } from 'uuid'
+import { useFile } from '@/context/fileContext'
+import { UploadedFileState } from '@/types/Files'
 
 const ChatWindow = () => {
 
@@ -32,6 +34,7 @@ const ChatWindow = () => {
     // 3 == failure
     const [fileState, setFileState] = useState(0);
     const [conversationId, setConversationId] = useState<string>(uuidv4() as string);
+    const {uploadedFileState, setUploadedFileState, highlightSection} = useFile();
 
     const {
         chatHistory,
@@ -156,15 +159,32 @@ const ChatWindow = () => {
         if (fileRef.current === null) return; // fail ? error ?
 
         // extract text
-        const txt = await extractText(fileRef.current);
-        console.log(`TEXT : ${txt}\n\n`);
+        const file = fileRef.current;
+        const textProm = extractText(file);
+        const fileURL = URL.createObjectURL(file);
+        const {text, pages} = await textProm;
+
+        // save for the doc viewer
+        // only acccept pdf now, init with no highlights
+        const f : UploadedFileState = {
+            name : file.name,
+            type : "pdf",
+            fileUrl : fileURL,
+            textContent : text,
+            pageTexts : pages,
+            highlights : []
+        };
+
+        setUploadedFileState(f);
+
+        console.log(`TEXT : ${text}\n\n`);
 
         // chunk text
-        const chunks = chunkText(txt, 300, 50);
+        const chunks = chunkText(text, 300, 50);
         console.log(`CHUNKS : ${chunks}\n\n`);
 
         // generate list of topics
-        const topicsP = createStudyPlanQuery(txt);
+        const topicsP = createStudyPlanQuery(text);
 
 
         // embed chunks
