@@ -15,6 +15,7 @@ import { Conversation } from '@/types/Conversation'
 import {v4 as uuidv4 } from 'uuid'
 import { useFile } from '@/context/fileContext'
 import { EmbeddedChunk, UploadedFileState } from '@/types/Files'
+import { Send } from 'lucide-react' 
 
 const ChatWindow = () => {
 
@@ -258,7 +259,15 @@ const ChatWindow = () => {
 
   return (
     <div className='w-full h-full flex flex-col justify-start items-center p-10 pt-[5%] relative'>
-
+        {/* PROFILE PICTURE - TOP RIGHT */}
+        <div className='absolute top-5 right-5 w-12 h-12'>
+            <img 
+                src={'/images/blank_pfp.jpg' || user?.profilePic} 
+                className='w-full h-full object-cover rounded-full ring-2 ring-gray-400 ring-offset-2' 
+                alt="User Profile"
+            />
+        </div>
+        
         {/* FILE UPLOAD BUTTON */}
         <TextbookUploader fileRef={fileRef} setFileState={setFileState} fileState={fileState} />
         
@@ -282,31 +291,34 @@ const ChatWindow = () => {
         </div>
 
         {/* USER INPUT FIELD */}
-        <div className='user-input-field absolute bottom-2 w-full p-5 flex justify-center items-center gap-3 z-30'>
-            <Textarea
-                className='w-[80%] rounded-lg overflow-y-auto resize-none bg-white z-40'
-                placeholder='Talk to Socrates...'
-                ref={inputRef}
-                value={inputContent}
-                onChange={(e) => {
-                    e.preventDefault();
-                    handleInputChange(e.target.value);
-                }}
+        <div className='user-input-field absolute bottom-5 w-full px-5 flex justify-center items-center z-30'>
+            <div className='flex items-center w-[90%] bg-white rounded-full px-5 py-3 shadow-md'>
+                {/* Textarea input */}
+               <Textarea
+                    className='flex-1 bg-transparent outline-none resize-none text-[28px] border-none shadow-none'
+                    placeholder="Ask Socrates something..."
+                    ref={inputRef}
+                    value={inputContent}
+                    onChange={(e) => {
+                        e.preventDefault();
+                        handleInputChange(e.target.value);
+                    }}
+                    disabled={generationState}
+                    onKeyDown={handleKeyDown}
+                />
 
-                disabled={generationState}
-                onKeyDown={handleKeyDown}
-            />
+                {/* Send Button */}
+                <Button
+                    variant='outline'
+                    className='ml-3 bg-[#4B63FD] text-white w-10 h-10 rounded-full flex items-center justify-center shadow-md hover:scale-105 transition-all duration-150'
+                    onClick={handleInputSubmit}
+                    disabled={generationState}
+                >
+                <Send className="w-10 h-10" />
+                </Button>
 
-            <Button
-                variant={'outline'}
-                className='bg-green-300 w-[5%] aspect-square rounded-full h-full'
-                onClick={handleInputSubmit}
-                disabled={generationState}
-            >
-
-            </Button>
+            </div>
         </div>
-
 
     </div>
   )
