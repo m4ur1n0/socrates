@@ -1,17 +1,21 @@
 "use client"
+import { useFile } from '@/context/fileContext'
 import { HighlightRegion } from '@/types/Files'
 import React, { useState } from 'react'
 import { Highlight, PdfHighlighter, PdfLoader, Popup } from 'react-pdf-highlighter'
 
-type Props = {
-    fileUrl : string
-    highlights : HighlightRegion[]
-    onNewHighlight? : (highlight : HighlightRegion) => void;
-}
+// type Props = {
+//     fileUrl : string
+//     highlights : HighlightRegion[]
+//     onNewHighlight? : (highlight : HighlightRegion) => void;
+// }
 
-const DocViewer = ({fileUrl , highlights, onNewHighlight}: Props) => {
+const DocViewer = () => {
 
     const [localHighlights, setLocalHighlights] = useState<HighlightRegion[]>(highlights);
+
+    const {uploadedFileState, highlights, setUploadedFileState, highlightSection} = useFile();
+    const fileUrl = uploadedFileState?.fileUrl || "";
 
     const scrollViewerTo = (highlight : HighlightRegion) => {
 

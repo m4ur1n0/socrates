@@ -7,6 +7,8 @@ import mammoth from 'mammoth'
 type TextResp = {
     text : string;
     pages : string[];
+    arrayBuffer : any;
+
 }
 
 export async function extractText(file : File): Promise<TextResp> {
@@ -32,14 +34,14 @@ export async function extractText(file : File): Promise<TextResp> {
 
         }
 
-        return {text, pages};
+        return {text, pages, arrayBuffer};
     } else if (fileType === "txt") {
         // easiest
-        return  {text : await file.text(), pages : []};
+        return  {text : await file.text(), pages : [], arrayBuffer : null};
     } else if (fileType === 'docx' || fileType === "doc") {
         const arrayBuffer = await file.arrayBuffer();
         const result = await mammoth.extractRawText({arrayBuffer});
-        return {text : result.value, pages : []};
+        return {text : result.value, pages : [], arrayBuffer : null};
     } else {
         throw new Error('unsupported file type') // will never occur, only accepts above types
     }

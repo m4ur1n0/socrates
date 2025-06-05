@@ -2,7 +2,8 @@
 import { chunkText } from '@/lib/files/ChunkText'
 import { generateEmbeddings, getChunksFromInput, loadCachedEmbeddings } from '@/lib/files/EmbedChunks'
 import { extractText } from '@/lib/files/TextExtraction'
-import { saveConversation } from '@/lib/firebase/db'
+// import { saveConversation } from '@/lib/firebase/db'
+import * as pdfjsLib from "pdfjs-dist";
 import { useChat } from '@/context/chatContext';
 import { createStudyPlanQuery, genericGeminiQuery } from '@/lib/gemini/gemini';
 import React, { useEffect, useRef, useState } from 'react'
@@ -33,6 +34,7 @@ const ChatWindow = () => {
     // 2 == file uploaded and stored properly
     // 3 == failure
     const [fileState, setFileState] = useState(0);
+    const [docProxy, setDocProxy] = useState(null);
     const [conversationId, setConversationId] = useState<string>(uuidv4() as string);
     const {uploadedFileState, setUploadedFileState, highlightSection} = useFile();
 
@@ -164,7 +166,11 @@ const ChatWindow = () => {
         const file = fileRef.current;
         const textProm = extractText(file);
         const fileURL = URL.createObjectURL(file);
-        const {text, pages} = await textProm;
+
+        // fulltext and text per page
+        const {text, pages, arrayBuffer} = await textProm;
+        let pdfDocProxyP : Promise<pdfjsLib.PDFDocumentProxy> = pdfjsLib.getDocument({data : arrayBuffer}).promise;
+
 
         // save for the doc viewer
         // only acccept pdf now, init with no highlights
@@ -194,6 +200,7 @@ const ChatWindow = () => {
                     page : p,
                     chunk : c,
                     indexInPage : idxInPage,
+                    // id : `pg${pageIdx}_chunk${idxInPage}`,
                     // no embedding yet
                 });
             });
@@ -209,7 +216,7 @@ const ChatWindow = () => {
         // embed chunks
         const embeddingsP = generateEmbeddings(allChunks.map(c => c.chunk));
 
-        const [topics, embeddings] = await Promise.all([topicsP, embeddingsP]);
+        const [topics, embeddings, pdfDocProxy] = await Promise.all([topicsP, embeddingsP, pdfDocProxyP]);
 
         console.log(`EMBEDDINGS : ${embeddings}\n\n`);
 
