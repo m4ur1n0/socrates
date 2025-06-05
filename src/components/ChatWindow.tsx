@@ -14,7 +14,7 @@ import { useUser } from '@/context/userContext'
 import { Conversation } from '@/types/Conversation'
 import {v4 as uuidv4 } from 'uuid'
 import { useFile } from '@/context/fileContext'
-import { UploadedFileState } from '@/types/Files'
+import { EmbeddedChunk, UploadedFileState } from '@/types/Files'
 
 const ChatWindow = () => {
 
@@ -43,6 +43,8 @@ const ChatWindow = () => {
         setChatHistory,
         setQuestionsHistory,
         setTextbookContext,
+        setConversationStruct,
+        conversationStruct
 
     } = useChat();
 
@@ -179,16 +181,33 @@ const ChatWindow = () => {
 
         console.log(`TEXT : ${text}\n\n`);
 
-        // chunk text
-        const chunks = chunkText(text, 300, 50);
-        console.log(`CHUNKS : ${chunks}\n\n`);
+        // // chunk text
+        // const chunks = chunkText(text, 300, 50);
+        // console.log(`CHUNKS : ${chunks}\n\n`);
+        const allChunks : EmbeddedChunk[] = [];
+        for (let p = 0; p < pages.length; p++) {
+            // chunk every page, store chunks in chunk list, use that 
+            const onePageText = pages[p];
+            const pChunks = chunkText(onePageText, 300, 50);
+            pChunks.forEach((c, idxInPage) => {
+                allChunks.push({
+                    page : p,
+                    chunk : c,
+                    indexInPage : idxInPage,
+                    // no embedding yet
+                });
+            });
+        }
+
+        // now allChunks has this typed-out chunk list
+
 
         // generate list of topics
         const topicsP = createStudyPlanQuery(text);
 
 
         // embed chunks
-        const embeddingsP = generateEmbeddings(chunks);
+        const embeddingsP = generateEmbeddings(allChunks.map(c => c.chunk));
 
         const [topics, embeddings] = await Promise.all([topicsP, embeddingsP]);
 
@@ -200,16 +219,20 @@ const ChatWindow = () => {
         const conv : Conversation = {
             conversationId,
             userId : user?.userId as string,
-            embeddingMap : chunks.map((chunk, idx) => {
+            embeddingMap : allChunks.map((c, i) => {
                 return {
-                    chunk,
-                    embedding : embeddings[idx],
-                    index : idx
+                    chunk : c.chunk,
+                    embedding : embeddings[i],
+                    page : c.page,
+                    indexInPage : c.indexInPage,
+                    index : i
                 }
             }),
             chatHistory,
             lastAccessedDate : new Date()
         };
+
+        setConversationStruct(conv);
 
         // STORE EMBEDDINGS IN LOCAL STORAGE
         // STORE CHUNKS IN LOCAL STORAGE

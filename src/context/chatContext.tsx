@@ -1,5 +1,6 @@
 "use client"
 
+import { Conversation } from "@/types/Conversation"
 import { createContext, ReactNode, useContext, useState } from "react"
 
 interface ChatContextType {
@@ -9,6 +10,8 @@ interface ChatContextType {
     setChatHistory : Function
     setQuestionsHistory : Function
     setTextbookContext : Function
+    conversationStruct : Conversation | null
+    setConversationStruct : Function
 
   }
   
@@ -16,10 +19,12 @@ interface ChatContextType {
     chatHistory : [],
     questionsHistory : [],
     textbookContext : [],
+    conversationStruct : null,
 
     setChatHistory : () => {},
     setQuestionsHistory : () => {},
     setTextbookContext : () => {},
+    setConversationStruct : () => {},
 
   })
   
@@ -36,6 +41,7 @@ interface ChatContextType {
     const [topicsList, setTopicsList] = useState<string[]>([]);
     const [conceptsHistory, setConceptsHistory] = useState<any[]>([]);
     const [currentConcept, setCurrentConcept] = useState<any>(null);
+    const [conversationStruct, setConversationStruct] = useState<Conversation | null>(null);
 
    
     const value = {
@@ -45,6 +51,7 @@ interface ChatContextType {
         topicsList,
         conceptsHistory,
         currentConcept,
+        conversationStruct,
         
         setChatHistory,
         setQuestionsHistory,
@@ -52,6 +59,7 @@ interface ChatContextType {
         setTopicsList,
         setConceptsHistory,
         setCurrentConcept,
+        setConversationStruct,
     }
 
     return (

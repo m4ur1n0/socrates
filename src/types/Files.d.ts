@@ -10,6 +10,34 @@ export type UploadedFileState = {
 export type HighlightRegion = {
     page : number;
     text : string;
-    id? : string;
+    id : string;
     comment? : string;
+    position : { // identical to IHighlight.position
+        pageNumber : number;
+        boundingRect : {
+            x1 : number;
+            y1 : number;
+            x2 : number;
+            y2 : number;
+            width : number;
+            height : number;
+        };
+        rects : Array<{
+            x1 : number;
+            y1 : number;
+            x2 : number;
+            y2 : number;
+            width : number;
+            height : number;
+        }>;
+    }
 }
+
+export type EmbeddedChunk = {
+    page : number; // 0-indexed
+    chunk : string; 
+    indexInPage : number;
+    embedding? : number[];
+
+}
+
