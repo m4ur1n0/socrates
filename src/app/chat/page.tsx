@@ -14,7 +14,7 @@ const page = () => {
         <ChatWindow />
       </div>
 
-      <NavBarRight />
+      {/* <NavBarRight /> */}
 
     </div>
   )
