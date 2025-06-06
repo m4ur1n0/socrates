@@ -204,17 +204,19 @@ const ChatWindow = () => {
 
 
         // generate list of topics
-        const topicsP = createStudyPlanQuery(text);
+        // const topicsP = createStudyPlanQuery(text);
 
 
         // embed chunks
         const embeddingsP = generateEmbeddings(allChunks.map(c => c.chunk));
 
-        const [topics, embeddings] = await Promise.all([topicsP, embeddingsP]);
+        // const [topics, embeddings] = await Promise.all([topicsP, embeddingsP]);
+        const [ embeddings] = await Promise.all([ embeddingsP]);
+
 
         console.log(`EMBEDDINGS : ${embeddings}\n\n`);
 
-        console.log(`TOPICS PLAN : ${topics}\n\n`);
+        // console.log(`TOPICS PLAN : ${topics}\n\n`);
 
 
         const conv : Conversation = {
@@ -295,7 +297,7 @@ const ChatWindow = () => {
             <div className='flex items-center w-[90%] bg-white rounded-full px-5 py-3 shadow-md'>
                 {/* Textarea input */}
                <Textarea
-                    className='flex-1 bg-transparent outline-none resize-none text-[28px] border-none shadow-none'
+                    className='flex-1 bg-transparent outline-none resize-none text-[28px] border-none shadow-none pt-5'
                     placeholder="Ask Socrates something..."
                     ref={inputRef}
                     value={inputContent}
