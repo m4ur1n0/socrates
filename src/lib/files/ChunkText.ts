@@ -9,6 +9,11 @@ export function chunkText(text : string, chunkSize? : number, overlap? : number)
         overlap = 50;
     }
 
+    // console.log("--------------------------------")
+    // console.log("PAGE:")
+    // console.log(text)
+    // console.log("--------------------------------")
+
     const words = text.split(/\s+/); // split by whitespace
     const chunks = [];
 

@@ -25,7 +25,7 @@ export async function extractText(file : File): Promise<TextResp> {
         const arrayBufferP = file.arrayBuffer();
         const retArrayBufferP = file.arrayBuffer();
         const [arrayBuffer, retArrayBuffer] = await Promise.all([arrayBufferP, retArrayBufferP]);
-        
+
         const pdf = await pdfjsLib.getDocument({ data : arrayBuffer}).promise;
 
         let text = '';
@@ -36,7 +36,7 @@ export async function extractText(file : File): Promise<TextResp> {
             const page = await pdf.getPage(i + 1); // indexed @ 1
             const content = await page.getTextContent();
             text += content.items.map((item : any) => item.str).join(' ') + '\n';
-            pages.push(content);
+            pages.push(content.items.map((item : any) => item.str).join(' '));
 
         }
 

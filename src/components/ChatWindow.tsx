@@ -215,6 +215,10 @@ const ChatWindow = () => {
         const textProm = extractText(file);
         const fileURL = URL.createObjectURL(file);
 
+        console.log("--------------------------------------")
+        console.log(`FILE URL : ${fileURL}`);
+        console.log("--------------------------------------")
+
         if (!pdfjsLib) {
             console.warn('pdfjs-dist has not loaded yet; try again shortly.');
             return;

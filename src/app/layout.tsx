@@ -1,5 +1,6 @@
 import { Toaster } from "@/components/ui/sonner";
 import { ChatContextProvider } from "@/context/chatContext";
+import { FileContextProvider } from "@/context/fileContext";
 import { UserContextProvider } from "@/context/userContext";
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
@@ -35,7 +36,9 @@ export default function RootLayout({
       >
         <UserContextProvider>
           <ChatContextProvider>
-            {children}
+            <FileContextProvider>
+              {children}
+            </FileContextProvider>
           </ChatContextProvider>
         </UserContextProvider>
         <Toaster richColors />

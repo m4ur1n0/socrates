@@ -97,7 +97,7 @@ export const createStudyPlanQuery = async (textbookText : string) : Promise<stri
         "Common mistakes in calculating sample probabilities"]'
       
       Remember, your response must be a string, starting with [, ending with ], and IMMEDIATELY PASSABLE TO JSON.parse(). Your response must contain absolutely nothing else, or it will
-      be unusable by our interface.
+      be unusable by our interface. Only list as many topics as are strictly necessary, there is no reason to go overboard.
 
       Everything past this sentence will be the content uploaded by your student that they are hoping to study.
 
@@ -116,8 +116,13 @@ export const createStudyPlanQuery = async (textbookText : string) : Promise<stri
 
 
     try {
-      respText = respText.replace('```', '');
-      respText = respText.trim();
+      // respText = respText.replace('```', '');
+      // respText = respText.trim();
+
+      topics = '[' + respText.split('[')[1];
+      topics = topics.split(']')[0] + ']';
+
+      console.log(topics);
 
       topics = JSON.parse(respText);
       
