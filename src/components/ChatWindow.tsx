@@ -3,7 +3,6 @@ import { chunkText } from '@/lib/files/ChunkText'
 import { generateEmbeddings, getChunksFromInput, loadCachedEmbeddings } from '@/lib/files/EmbedChunks'
 import { extractText } from '@/lib/files/TextExtraction'
 // import { saveConversation } from '@/lib/firebase/db'
-import * as pdfjsLib from "pdfjs-dist";
 import { useChat } from '@/context/chatContext';
 import { createStudyPlanQuery, genericGeminiQuery } from '@/lib/gemini/gemini';
 import React, { useEffect, useRef, useState } from 'react'
@@ -15,7 +14,10 @@ import { useUser } from '@/context/userContext'
 import { Conversation } from '@/types/Conversation'
 import {v4 as uuidv4 } from 'uuid'
 import { useFile } from '@/context/fileContext'
-import { EmbeddedChunk, UploadedFileState } from '@/types/Files'
+import { EmbeddedChunk, HighlightRegion, UploadedFileState } from '@/types/Files'
+import { computePositionsForChunks } from '@/lib/files/ComputeHighlightPositions';
+
+
 
 const ChatWindow = () => {
 
@@ -34,7 +36,8 @@ const ChatWindow = () => {
     // 2 == file uploaded and stored properly
     // 3 == failure
     const [fileState, setFileState] = useState(0);
-    const [docProxy, setDocProxy] = useState(null);
+    const [pdfjsLib, setPdfjsLib] = useState<any>(null);
+    const [docProxy, setDocProxy] = useState</*pdfjsLib.PDFDocumentProxy*/ any | null>(null);
     const [conversationId, setConversationId] = useState<string>(uuidv4() as string);
     const {uploadedFileState, setUploadedFileState, highlightSection} = useFile();
 
@@ -52,6 +55,20 @@ const ChatWindow = () => {
 
     const {user} = useUser();
 
+    useEffect(() => {
+        import('pdfjs-dist').then((lib) => {
+          // MODIFICATION BELOW
+          //
+          // Import the worker file as a URL. Next.js 13+ understands '?url' and serves it properly.
+          // We use the "legacy" build here to match CommonJS/Esm paths.
+            const workerUrl = new URL('pdfjs-dist/build/pdf.worker.min.mjs', import.meta.url).toString();
+            lib.GlobalWorkerOptions.workerSrc = workerUrl;
+            setPdfjsLib(lib);
+          //
+          // END OF MODIFICATION
+        });
+      }, []);
+
     const adjustTextAreaHeight = () => {
         if (inputRef.current) {
             inputRef.current.style.height="auto";
@@ -63,13 +80,41 @@ const ChatWindow = () => {
         setInputContent(curr);
     }
 
+    async function handleHighlights(promptChunks : string[]) {
+        if (
+            !promptChunks?.length ||
+            !conversationStruct?.embeddingMap ||
+            !docProxy
+          ) {
+            return;
+        }
+
+        // Take the first promptChunk for demo, find matching entry in embeddingMap
+        const chunkText = promptChunks[0];
+        const entry = conversationStruct.embeddingMap.find(
+            (m: any) => m.chunk === chunkText
+        );
+
+        if (!entry) return;
+
+        // Compute the bounding boxes for that single chunk
+        const highlightSect: HighlightRegion[] = await computePositionsForChunks(
+            docProxy,
+            [{ id: entry.id, page: entry.page, text: entry.chunk }]
+        );
+
+        // Push into fileContext so DocViewer picks it up
+        highlightSection(highlightSect);
+    }
+
 
     async function handleInputSubmit() {
         // get input from controlled variable, send to gemini, output result.
 
         if (!inputContent) return;
         setGenerationState(true);
-
+        const prompt = inputContent;
+        setInputContent("");
 
 
         setChatHistory((prev : any[]) => [
@@ -77,7 +122,7 @@ const ChatWindow = () => {
             {
                 role : "USER", 
                 content : {
-                    message : inputContent
+                    message : prompt
                 }
             }
         ]);
@@ -85,7 +130,7 @@ const ChatWindow = () => {
         // can do custom logic here re : if this is the first chat or something.... for now just send away
 
         // eventually we'll have gemini return a json-structured response, for now we go with a string
-        const prompt = inputContent;
+        
         let promptChunks : string[] = [];
 
         const obj = loadCachedEmbeddings();
@@ -104,6 +149,9 @@ const ChatWindow = () => {
 
 
         try {
+
+            await handleHighlights(promptChunks);
+
             const resp = await genericGeminiQuery(prompt, chatHistory, promptChunks);
 
 
@@ -111,7 +159,6 @@ const ChatWindow = () => {
                 throw new Error("Error occurred in gemini api call...");
             }
 
-            setInputContent("");
 
             // do something to parse the actual response we get, rn just pretending
 
@@ -162,14 +209,20 @@ const ChatWindow = () => {
         // the signaler would have checked, but never hurts to double
         if (fileRef.current === null) return; // fail ? error ?
 
+
         // extract text
         const file = fileRef.current;
         const textProm = extractText(file);
         const fileURL = URL.createObjectURL(file);
 
+        if (!pdfjsLib) {
+            console.warn('pdfjs-dist has not loaded yet; try again shortly.');
+            return;
+        }
+
         // fulltext and text per page
         const {text, pages, arrayBuffer} = await textProm;
-        let pdfDocProxyP : Promise<pdfjsLib.PDFDocumentProxy> = pdfjsLib.getDocument({data : arrayBuffer}).promise;
+        let pdfDocProxyP : Promise<any> = pdfjsLib.getDocument({data : arrayBuffer}).promise;
 
 
         // save for the doc viewer
@@ -218,6 +271,8 @@ const ChatWindow = () => {
 
         const [topics, embeddings, pdfDocProxy] = await Promise.all([topicsP, embeddingsP, pdfDocProxyP]);
 
+        setDocProxy(pdfDocProxy);
+
         console.log(`EMBEDDINGS : ${embeddings}\n\n`);
 
         console.log(`TOPICS PLAN : ${topics}\n\n`);
@@ -232,7 +287,8 @@ const ChatWindow = () => {
                     embedding : embeddings[i],
                     page : c.page,
                     indexInPage : c.indexInPage,
-                    index : i
+                    index : i,
+                    id : `pg${c.page}_chunk${c.indexInPage}`,
                 }
             }),
             chatHistory,
@@ -261,7 +317,7 @@ const ChatWindow = () => {
             saveAndStoreConversationFirstTime();
         }
 
-    }, [fileState])
+    }, [fileState, pdfjsLib])
 
   return (
     <div className='w-full h-full flex flex-col justify-start items-center p-10 pt-[5%] relative'>

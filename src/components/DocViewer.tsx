@@ -1,7 +1,7 @@
 "use client"
 import { useFile } from '@/context/fileContext'
 import { HighlightRegion } from '@/types/Files'
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { Highlight, PdfHighlighter, PdfLoader, Popup } from 'react-pdf-highlighter'
 
 // type Props = {
@@ -12,10 +12,13 @@ import { Highlight, PdfHighlighter, PdfLoader, Popup } from 'react-pdf-highlight
 
 const DocViewer = () => {
 
-    const [localHighlights, setLocalHighlights] = useState<HighlightRegion[]>(highlights);
 
-    const {uploadedFileState, highlights, setUploadedFileState, highlightSection} = useFile();
+    const {uploadedFileState, setUploadedFileState, highlightSection} = useFile();
     const fileUrl = uploadedFileState?.fileUrl || "";
+
+    const [localHighlights, setLocalHighlights] = useState<HighlightRegion[]>(uploadedFileState?.highlights || []);
+
+    if (!fileUrl) return null;
 
     const scrollViewerTo = (highlight : HighlightRegion) => {
 
@@ -24,47 +27,34 @@ const DocViewer = () => {
 
     }
 
+    useEffect(() => {
+        if (uploadedFileState?.highlights) {
+          setLocalHighlights(uploadedFileState.highlights);
+        }
+    }, [uploadedFileState?.highlights]);
+
   return (
     <div className='document-viewer-thumbnail w-full border rounded-xl overflow-hidden'>
 
-        <PdfLoader url={fileUrl} beforeLoad={<div className="p-4 text-center">Loading...</div>}>
+        <PdfLoader url={fileUrl} beforeLoad={<div className="p-4 text-center text-gray-500">Loading...</div>}>
             {
                 (pdfDocument) =>(
                     <PdfHighlighter
                         pdfDocument={pdfDocument}
-                        enableAreaSelection = {(event) => event.altKey}
+                        enableAreaSelection = {() => false}
                         scrollRef={() => {}}
-                        highlights = {localHighlights.map((h, i) => ({
-                            id : h.id || `hl-${i}`,
+                        onScrollChange={()=>{}}
+                        onSelectionFinished={()=>{}}
+                        highlights = {localHighlights.map((h) => ({
+                            id : h.id,
                             content : {text: h.text},
-                            position : {
-                                pageNumber : h.page,
-                                boundingRect : {}, // auto generate if needed -- PSYCH THIS DOESN'T SEEM TO WORK   
-                                rects : [],
-                            },
-                            comment : ""
+                            position : h.position,
+                            comment : {emoji : "", text : ""}
                         }))}
-                        onSelectionFinished={(
-                            position,
-                            content,
-                            hideTipAndSelection,
-                        ) => {
-                            const newHighlight : HighlightRegion = {
-                                page : position.pageNumber,
-                                text : content.text as string,
-                                id : `hl-${Date.now()}`
-                            };
-
-                            setLocalHighlights((prev) => [...prev, newHighlight]);
-                            onNewHighlight?.(newHighlight);
-
-                            hideTipAndSelection();
-                        }}
-
                         highlightTransform={(highlight, index, setTip, hideTip, viewportToScaled, screenshot, isScrolledTo) => (
                             <Popup
                                 popupContent={null}
-                                onMouseOver={setTip}
+                                onMouseOver={() => setTip(highlight, hideTip)}
                                 onMouseOut={hideTip}
                                 key={index}
                             >
@@ -86,3 +76,27 @@ const DocViewer = () => {
 }
 
 export default DocViewer
+
+
+// cutting room floor:
+
+/**
+ * onSelectionFinished={(
+                            position,
+                            content,
+                            hideTipAndSelection,
+                        ) => {
+                            const newHighlight : HighlightRegion = {
+                                page : position.pageNumber,
+                                text : content.text as string,
+                                id : `hl-${Date.now()}`
+                            };
+
+                            setLocalHighlights((prev) => [...prev, newHighlight]);
+                            onNewHighlight?.(newHighlight);
+
+                            hideTipAndSelection();
+                        }}
+
+                        
+ */

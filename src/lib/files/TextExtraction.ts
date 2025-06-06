@@ -19,7 +19,13 @@ export async function extractText(file : File): Promise<TextResp> {
         // deal w pdf first
         // const pdfjsLib = await import('https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.10.377/pdf.min.js');
 
-        const arrayBuffer = await file.arrayBuffer();
+        // const arrayBufferP = file.arrayBuffer();
+        // const retArrayBufferP file.arrayBuffer();
+        // const [arrayBuffer, retArrayBuffer] = await Promise.all([arrayBufferP, retArrayBufferP]);
+        const arrayBufferP = file.arrayBuffer();
+        const retArrayBufferP = file.arrayBuffer();
+        const [arrayBuffer, retArrayBuffer] = await Promise.all([arrayBufferP, retArrayBufferP]);
+        
         const pdf = await pdfjsLib.getDocument({ data : arrayBuffer}).promise;
 
         let text = '';
@@ -34,7 +40,7 @@ export async function extractText(file : File): Promise<TextResp> {
 
         }
 
-        return {text, pages, arrayBuffer};
+        return {text, pages, arrayBuffer : retArrayBuffer};
     } else if (fileType === "txt") {
         // easiest
         return  {text : await file.text(), pages : [], arrayBuffer : null};

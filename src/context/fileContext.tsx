@@ -7,13 +7,13 @@ interface FileContextType {
     uploadedFileState : UploadedFileState | null;
     setUploadedFileState : Function;
     highlightSection : Function;
-    highlights : HighlightRegion[];
+    // highlights : HighlightRegion[];
 
   }
   
   const FileContext = createContext<FileContextType>({
     uploadedFileState : null,
-    highlights : [],
+    // highlights : [],
 
     setUploadedFileState : () => {},
     highlightSection : () => {},
@@ -28,18 +28,24 @@ interface FileContextType {
   const FileContextProvider = ({ children }: { children: ReactNode }) => {
 
     const [uploadedFileState, setUploadedFileState] = useState<UploadedFileState | null>(null);
-    const [highlights, setHighlights] = useState<HighlightRegion[]>([]);
+    // const [highlights, setHighlights] = useState<HighlightRegion[]>([]);
     
-    function highlightSection(highlight : HighlightRegion) {
+    function highlightSection(highlightsList : HighlightRegion[]) {
         // this is where the real highlight regions are computed?
+        // setHighlights(highlightsList);
 
+        // overwrite any other highlights with this new one
+        setUploadedFileState(prev => ({
+          ...prev!,
+          highlights : highlightsList
+        }))
 
         return;
     }
    
     const value = {
         uploadedFileState,
-        highlights,
+        // highlights,
 
         setUploadedFileState,
         highlightSection,
