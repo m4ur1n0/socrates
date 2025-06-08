@@ -7,6 +7,8 @@ interface FileContextType {
     uploadedFileState : UploadedFileState | null;
     setUploadedFileState : Function;
     highlightSection : Function;
+    relevantChunk : string;
+    setRelevantChunk : Function;
 
   }
   
@@ -14,6 +16,8 @@ interface FileContextType {
     uploadedFileState : null,
     setUploadedFileState : () => {},
     highlightSection : () => {},
+    relevantChunk : "",
+    setRelevantChunk : () => {},
   })
   
   // Hook for user context
@@ -24,6 +28,7 @@ interface FileContextType {
   const FileContextProvider = ({ children }: { children: ReactNode }) => {
 
     const [uploadedFileState, setUploadedFileState] = useState<UploadedFileState | null>(null);
+    const [relevantChunk, setRelevantChunk] = useState<string>("");
     
     function highlightSection() {
         return;
@@ -33,6 +38,8 @@ interface FileContextType {
         uploadedFileState,
         setUploadedFileState,
         highlightSection,
+        relevantChunk,
+        setRelevantChunk,
     }
 
     return (

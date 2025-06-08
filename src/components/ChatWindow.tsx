@@ -35,7 +35,7 @@ const ChatWindow = () => {
     // 3 == failure
     const [fileState, setFileState] = useState(0);
     const [conversationId, setConversationId] = useState<string>(uuidv4() as string);
-    const {uploadedFileState, setUploadedFileState, highlightSection} = useFile();
+    const {uploadedFileState, setUploadedFileState, highlightSection, setRelevantChunk} = useFile();
 
     const {
         chatHistory,
@@ -95,6 +95,11 @@ const ChatWindow = () => {
 
             const inputChunks = await getChunksFromInput(prompt, chunks, embeddings);
             promptChunks = inputChunks as string[];
+
+
+            console.log(`SETTING RELEVANT CHUNKS : ${promptChunks[0]}`)
+
+            setRelevantChunk(promptChunks[0]);
 
         } else {
             console.log("WE DID NOT LOAD ANY CHNKS");
